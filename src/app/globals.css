@@ -1,26 +1,245 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-color: #f6efe6; /* Softer cream base */
+  --text-main: #4a3728;
+  --text-muted: #8d7b6d;
+  
+  /* Soft Earth Tone Palette */
+  --color-green: #97b08b;      /* Soft Sage */
+  --color-yellow: #e9c46a;     /* Muted Gold */
+  --color-red: #cc8b86;        /* Dusky Rose */
+  --color-brown: #a67c52;      /* Warm Tan */
+  
+  /* Dimension Colors (Handcrafted feel) */
+  --color-p: #6b8e23; /* Olive Green for Wan Phra */
+  --color-x: #b22222; /* Brick Red for Wan Sia */
+  --color-k: #cd853f; /* Ochre for Kao Kong */
+  
+  --card-bg: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  
+  --shadow-soft: 0 10px 30px rgba(74, 55, 40, 0.05);
+  --radius-lg: 32px;
+  --radius-md: 20px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  padding: 1.25rem;
+  max-width: 440px; /* Tighter mobile feel */
+  margin: 0 auto;
+  width: 100%;
+}
+
+header {
+  text-align: center;
+  margin: 1.5rem 0 2rem;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.calendar-container {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 2rem;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Calendar Grid Styles */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding-bottom: 8px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.calendar-day:hover {
+  background: #f0f0f0;
+}
+
+.calendar-day.selected {
+  background: var(--text-main);
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(74, 55, 40, 0.2);
+}
+
+.calendar-day.today {
+  border: 1px solid var(--text-main);
+}
+
+.calendar-day-indicator {
+  position: absolute;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+/* Assessment Card Styling */
+.assessment-card {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.dimensions-row {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1.5rem;
+}
+
+.dim-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dim-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #f8f8f8;
+  transition: all 0.3s ease;
+}
+
+.dim-item.active .dim-icon {
+  background: var(--icon-color);
+  color: white;
+}
+
+.dim-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Centered Detail Modal */
+.detail-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(74, 55, 40, 0.4);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.detail-modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.detail-modal-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -45%) scale(0.95);
+  width: calc(100% - 32px);
+  max-width: 400px;
+  background: #fff;
+  z-index: 1001;
+  border-radius: 28px;
+  padding: 2rem 1.5rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.detail-modal-container.active {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Modal Handle (Aesthetic only) */
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 100px;
+  margin: -1rem auto 1.5rem;
+}
+
+/* Typography Enhancements */
+h1 {
+  font-family: 'Sarabun', sans-serif;
+  font-weight: 800;
+}
+
+.day-header-lanna {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 4px 0;
+}
+
+.sub-header-lanna {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }

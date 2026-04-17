@@ -1,65 +1,154 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { getLannaDate, getDayAssessment, Activity } from '@/lib/lanna-logic';
+import { getHolidays } from '@/lib/holiday-logic';
+import CalendarGrid from '@/components/CalendarGrid';
+import DimensionGrid from '@/components/DimensionGrid';
+import WeeklySummary from '@/components/WeeklySummary';
+import ActivitySelector from '@/components/ActivitySelector';
 
 export default function Home() {
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [viewDate, setViewDate] = useState(new Date());
+  const [activity, setActivity] = useState<Activity>('general');
+  const [isModalOpen, setModalOpen] = useState(false);
+  
+  const [lDate, setLDate] = useState<any>(null);
+  const [assessment, setAssessment] = useState<any>(null);
+  const [holidays, setHolidays] = useState<any[]>([]);
+
+  useEffect(() => {
+    setLDate(getLannaDate(selectedDate));
+    setAssessment(getDayAssessment(selectedDate, activity));
+    setHolidays(getHolidays(selectedDate));
+  }, [selectedDate, activity]);
+
+  const toggleModal = (date: Date) => {
+    if (date.toDateString() === selectedDate.toDateString()) {
+      setModalOpen(!isModalOpen);
+    } else {
+      setSelectedDate(date);
+      setModalOpen(true);
+    }
+  };
+
+  const nextMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
+
+  const prevMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  };
+
+  if (!lDate || !assessment) return null;
+
+  const phase = lDate.isWaxing ? 'ขึ้น' : 'แรม';
+  const monthNames = [
+    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main>
+      <header>
+        <h1>ปฏิทินล้านนา</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+          สะป๊ะวันดี วันเสีย • ฉบับยืนยันตามตำรา
+        </p>
+      </header>
+
+      <ActivitySelector currentActivity={activity} onChange={setActivity} />
+
+      <div className="calendar-container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+          <button onClick={prevMonth} className="nav-btn">&larr;</button>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+            {monthNames[viewDate.getMonth()]} {viewDate.getFullYear() + 543}
+          </h2>
+          <button onClick={nextMonth} className="nav-btn">&rarr;</button>
+        </div>
+
+        <CalendarGrid 
+          currentDate={viewDate} 
+          selectedDate={selectedDate} 
+          onSelectDate={toggleModal} 
+          activity={activity}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      </div>
+
+      <WeeklySummary startDate={selectedDate} activity={activity} />
+
+      {/* Centered Modal Backdrop */}
+      <div 
+        className={`detail-modal-backdrop ${isModalOpen ? 'active' : ''}`}
+        onClick={() => setModalOpen(false)}
+      />
+
+      {/* Centered Modal Container */}
+      <div className={`detail-modal-container ${isModalOpen ? 'active' : ''}`}>
+        <div className="modal-handle" />
+        
+        {holidays.length > 0 && (
+            <div className="holiday-badge" style={{ marginBottom: '1.25rem' }}>
+                {holidays.map(h => h.nameTh).join(', ')}
+            </div>
+        )}
+
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--color-brown)', textTransform: 'uppercase', opacity: 0.6 }}>
+            รายละเอียดวัน
+          </span>
+          <h3 className="day-header-lanna" style={{ fontSize: '1.4rem' }}>
+            เดือน{lDate.lannaMonth} {phase} {lDate.lunarDay} ค่ำ
+          </h3>
+          <p className="sub-header-lanna">
+            จ.ศ. {lDate.csYear} • {selectedDate.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <DimensionGrid flags={assessment.flags} />
+
+        <div className={`verdict-banner ${assessment.verdict.status}`} data-score={assessment.verdict.totalScore}>
+          <span className="verdict-title">
+            {assessment.verdict.status === 'good' ? '✿ วันดี' : assessment.verdict.status === 'caution' ? '✧ ระวัง' : '✕ วันเสีย'}
+          </span>
+          <p className="verdict-desc">{assessment.verdict.reasonTh}</p>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <footer style={{ marginTop: '3rem', textAlign: 'center', fontSize: '0.7rem', opacity: 0.4, paddingBottom: '2rem' }}>
+        ออกแบบตามจารีตล้านนา • {new Date().getFullYear() + 543}
+      </footer>
+
+      <style jsx>{`
+        .nav-btn {
+          background: #fff;
+          border: 1px solid #eee;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          border-radius: 12px;
+          color: var(--text-main);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+          transition: all 0.2s;
+        }
+        .nav-btn:hover { background: #f9f9f9; transform: translateY(-1px); }
+        .holiday-badge {
+            background: var(--color-red);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
+            margin: 0 auto;
+            display: table;
+        }
+      `}</style>
+    </main>
   );
 }
