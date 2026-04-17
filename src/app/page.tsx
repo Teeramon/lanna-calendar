@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getLannaDate, getDayAssessment, Activity } from '@/lib/lanna-logic';
-import { getHolidays } from '@/lib/holiday-logic';
+import { getLannaDate, getDayAssessment, Activity, LannaDate, DayAssessment } from '@/lib/lanna-logic';
+import { getHolidays, Holiday } from '@/lib/holiday-logic';
 import CalendarGrid from '@/components/CalendarGrid';
 import DimensionGrid from '@/components/DimensionGrid';
 import WeeklySummary from '@/components/WeeklySummary';
@@ -14,9 +14,9 @@ export default function Home() {
   const [activity, setActivity] = useState<Activity>('general');
   const [isModalOpen, setModalOpen] = useState(false);
   
-  const [lDate, setLDate] = useState<any>(null);
-  const [assessment, setAssessment] = useState<any>(null);
-  const [holidays, setHolidays] = useState<any[]>([]);
+  const [lDate, setLDate] = useState<LannaDate | null>(null);
+  const [assessment, setAssessment] = useState<DayAssessment | null>(null);
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
 
   useEffect(() => {
     setLDate(getLannaDate(selectedDate));

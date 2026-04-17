@@ -24,7 +24,7 @@ const DimensionGrid: React.FC<DimensionGridProps> = ({ flags }) => {
         <div 
           key={key} 
           className={`dim-box-classic ${status.isActive ? 'active' : 'inactive'}`}
-          style={{ '--accent': color } as any}
+          style={{ '--accent': color } as React.CSSProperties}
         >
           <div className="dim-head">
             <span className="dim-letter">{key}</span>
